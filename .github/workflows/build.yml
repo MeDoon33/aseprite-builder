@@ -50,8 +50,6 @@ jobs:
           Invoke-WebRequest -Uri "https://github.com/aseprite/skia/releases/download/m124-08a5439a6b/Skia-Windows-Release-x64.zip" -OutFile "skia.zip" -UseBasicParsing
           mkdir skia -Force
           Expand-Archive -Force "skia.zip" "skia"
-          mkdir skia\out\Release-x64 -Force
-          Invoke-WebRequest -Uri "https://github.com/aseprite/skia/releases/download/m124-08a5439a6b/icudtl.dat" -OutFile "skia\out\Release-x64\icudtl.dat" -UseBasicParsing
           Write-Host "Skia m124 extracted successfully"
 
       - name: Initialize MSVC Environment
@@ -89,7 +87,7 @@ jobs:
         shell: powershell
         run: |
           $binDir = "$env:GITHUB_WORKSPACE\build\bin"
-          $icuFile = "$env:GITHUB_WORKSPACE\skia\out\Release-x64\icudtl.dat"
+          $icuFile = "$env:GITHUB_WORKSPACE\skia\third_party\externals\icu\flutter\icudtl.dat"
           if (Test-Path $icuFile) {
               Copy-Item $icuFile -Destination $binDir -Force
               echo "[+] icudtl.dat copied to $binDir"
