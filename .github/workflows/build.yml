@@ -1,4 +1,4 @@
-﻿name: Build Aseprite
+name: Build Aseprite
 on:
   workflow_dispatch:
 
@@ -47,10 +47,12 @@ jobs:
       - name: Download & Extract Skia
         shell: powershell
         run: |
-          Invoke-WebRequest -Uri "https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-Windows-Release-x64.zip" -OutFile "skia.zip" -UseBasicParsing
+          Invoke-WebRequest -Uri "https://github.com/aseprite/skia/releases/download/m124-08a5439a6b/Skia-Windows-Release-x64.zip" -OutFile "skia.zip" -UseBasicParsing
           mkdir skia -Force
           Expand-Archive -Force "skia.zip" "skia"
-          Write-Host "Skia extracted successfully"
+          mkdir skia\out\Release-x64 -Force
+          Invoke-WebRequest -Uri "https://github.com/aseprite/skia/releases/download/m124-08a5439a6b/icudtl.dat" -OutFile "skia\out\Release-x64\icudtl.dat" -UseBasicParsing
+          Write-Host "Skia m124 extracted successfully"
 
       - name: Initialize MSVC Environment
         uses: ilammy/msvc-dev-cmd@v1
@@ -69,6 +71,7 @@ jobs:
             -DSKIA_DIR="$abs_skia" `
             -DSKIA_LIBRARY_DIR="$abs_skia\out\Release-x64" `
             -DSKIA_LIBRARY="$abs_skia\out\Release-x64\skia.lib" `
+            -DENABLE_SCRIPTING=ON `
             -DENABLE_UPDATER=OFF `
             -DENABLE_TESTS=OFF `
             "$abs_src"
@@ -86,6 +89,11 @@ jobs:
         shell: powershell
         run: |
           $binDir = "$env:GITHUB_WORKSPACE\build\bin"
+          $icuFile = "$env:GITHUB_WORKSPACE\skia\out\Release-x64\icudtl.dat"
+          if (Test-Path $icuFile) {
+              Copy-Item $icuFile -Destination $binDir -Force
+              echo "[+] icudtl.dat copied to $binDir"
+          }
           $sslDir = "C:\Program Files\OpenSSL\bin"
           if (Test-Path "$sslDir\libcrypto-3-x64.dll") {
               Copy-Item "$sslDir\libcrypto-3-x64.dll" -Destination $binDir -Force
